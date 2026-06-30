@@ -120,7 +120,8 @@ export default function CheckoutPage() {
             name: guestInfo.name.trim(),
             phone: guestInfo.phone.trim(),
             password: 'guest_account_placeholder',
-            role: 'CUSTOMER'
+            role: 'CUSTOMER',
+            updatedAt: new Date().toISOString()
           });
           if (userError) throw userError;
         }
