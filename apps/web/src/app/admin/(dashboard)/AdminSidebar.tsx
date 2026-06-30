@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
+import { adminLogout } from './actions';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -75,12 +76,15 @@ export default function AdminSidebar({ initials, userName }: { initials: string;
         })}
         
         <div className="pt-6 mt-4 border-t border-white/10">
-          <form action="/api/admin/logout" method="POST">
-            <button type="submit" className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-gray-400 hover:bg-[#3D141C]/50 hover:text-white transition-all duration-200">
-              <LogOut size={18} />
-              Logout
-            </button>
-          </form>
+          <button 
+            onClick={async () => {
+              await adminLogout();
+            }} 
+            className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-gray-400 hover:bg-[#3D141C]/50 hover:text-white transition-all duration-200"
+          >
+            <LogOut size={18} />
+            Logout
+          </button>
         </div>
       </nav>
 
