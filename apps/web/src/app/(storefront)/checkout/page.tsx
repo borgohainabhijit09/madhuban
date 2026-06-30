@@ -16,6 +16,16 @@ export default function CheckoutPage() {
   const [addresses, setAddresses] = useState<any[]>([]);
   const [selectedAddress, setSelectedAddress] = useState<any>(null);
   
+  const [guestInfo, setGuestInfo] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    pinCode: ''
+  });
+  
   const [shippingRates, setShippingRates] = useState<Record<string, number>>({});
   const [shippingCost, setShippingCost] = useState(0);
   
@@ -32,17 +42,14 @@ export default function CheckoutPage() {
       const supabase = createClient();
       
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push("/login?redirect=/checkout");
-        return;
-      }
-      setUser(user);
-
-      // Fetch Addresses
-      const { data: addrs } = await supabase.from('Address').select('*').eq('userId', user.id);
-      if (addrs && addrs.length > 0) {
-        setAddresses(addrs);
-        setSelectedAddress(addrs[0]);
+      if (user) {
+        setUser(user);
+        // Fetch Addresses
+        const { data: addrs } = await supabase.from('Address').select('*').eq('userId', user.id);
+        if (addrs && addrs.length > 0) {
+          setAddresses(addrs);
+          setSelectedAddress(addrs[0]);
+        }
       }
 
       // Fetch Shipping Rates
@@ -62,23 +69,82 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (selectedAddress) {
       const state = selectedAddress.state;
-      const rate = shippingRates[state] || 0; // fallback to 0 if owner hasn't set rate for this state
+      const rate = shippingRates[state] || 0;
       setShippingCost(rate);
+    } else if (guestInfo.state) {
+      const rate = shippingRates[guestInfo.state] || 0;
+      setShippingCost(rate);
+    } else {
+      setShippingCost(0);
     }
-  }, [selectedAddress, shippingRates]);
+  }, [selectedAddress, guestInfo.state, shippingRates]);
 
   const handlePlaceOrder = async () => {
-    if (!user || !selectedAddress || items.length === 0) return;
+    if (!user && (!guestInfo.name || !guestInfo.email || !guestInfo.phone || !guestInfo.address || !guestInfo.city || !guestInfo.state || !guestInfo.pinCode)) {
+      alert("Please complete the shipping address first.");
+      return;
+    }
+    if (user && !selectedAddress) {
+      alert("Please select a shipping address.");
+      return;
+    }
+    if (items.length === 0) return;
+    
     setIsPlacingOrder(true);
     const supabase = createClient();
 
     try {
-      // 1. Create Order
+      let finalUserId = '';
+      let finalAddressId = '';
+
+      if (user) {
+        finalUserId = user.id;
+        finalAddressId = selectedAddress.id;
+      } else {
+        // Guest Flow:
+        // 1. Check if user already exists in public.User
+        const { data: existingUser } = await supabase
+          .from('User')
+          .select('id')
+          .eq('email', guestInfo.email.toLowerCase().trim())
+          .maybeSingle();
+
+        if (existingUser) {
+          finalUserId = existingUser.id;
+        } else {
+          // Create a new guest user row
+          finalUserId = 'usr_guest_' + Math.random().toString(36).substring(2, 10);
+          const { error: userError } = await supabase.from('User').insert({
+            id: finalUserId,
+            email: guestInfo.email.toLowerCase().trim(),
+            name: guestInfo.name.trim(),
+            phone: guestInfo.phone.trim(),
+            password: 'guest_account_placeholder',
+            role: 'CUSTOMER'
+          });
+          if (userError) throw userError;
+        }
+
+        // 2. Create a new guest Address row
+        finalAddressId = 'addr_guest_' + Math.random().toString(36).substring(2, 10);
+        const { error: addressError } = await supabase.from('Address').insert({
+          id: finalAddressId,
+          userId: finalUserId,
+          type: 'SHIPPING',
+          address: guestInfo.address.trim(),
+          city: guestInfo.city.trim(),
+          state: guestInfo.state,
+          pinCode: guestInfo.pinCode.trim()
+        });
+        if (addressError) throw addressError;
+      }
+
+      // 3. Create Order
       const orderId = 'ord_' + Math.random().toString(36).substring(2, 10);
       const { error: orderError } = await supabase.from('Order').insert({
         id: orderId,
-        userId: user.id,
-        addressId: selectedAddress.id,
+        userId: finalUserId,
+        addressId: finalAddressId,
         status: 'CONFIRMED',
         totalAmount: total,
         taxAmount: tax,
@@ -88,7 +154,7 @@ export default function CheckoutPage() {
 
       if (orderError) throw orderError;
 
-      // 2. Create Order Items
+      // 4. Create Order Items
       const orderItemsToInsert = items.map(item => ({
         id: 'itm_' + Math.random().toString(36).substring(2, 10),
         orderId: orderId,
@@ -100,7 +166,7 @@ export default function CheckoutPage() {
       const { error: itemsError } = await supabase.from('OrderItem').insert(orderItemsToInsert);
       if (itemsError) throw itemsError;
 
-      // 3. Clear Cart & Redirect
+      // 5. Clear Cart & Redirect
       clearCart();
       router.push(`/checkout/success?orderId=${orderId}`);
 
@@ -156,51 +222,166 @@ export default function CheckoutPage() {
               
               {step === 1 && (
                 <div className="space-y-4">
-                  {addresses.length === 0 ? (
-                    <div className="bg-[#FAF8F5] p-6 rounded-xl border border-[#EAE2DB] text-center">
-                      <MapPin className="mx-auto mb-3 text-[#C89F5F]" size={24} />
-                      <p className="text-gray-600 font-medium mb-4">You have no saved addresses.</p>
-                      <Link href="/account/addresses" className="inline-flex items-center gap-2 bg-white border border-[#C89F5F] text-[#5c2a1c] px-6 py-2 rounded-lg font-bold text-sm hover:bg-[#C89F5F] hover:text-white transition-colors">
-                        <Plus size={16} /> Add Address First
-                      </Link>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {addresses.map(addr => (
-                          <div 
-                            key={addr.id}
-                            onClick={() => setSelectedAddress(addr)}
-                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedAddress?.id === addr.id ? 'border-[#C89F5F] bg-[#FAF8F5]' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
-                          >
-                            <div className="flex justify-between items-start mb-2">
-                              <span className="font-bold text-[#3A1E14] text-sm flex items-center gap-2">
-                                {addr.type}
-                                {selectedAddress?.id === addr.id && <CheckCircle2 size={16} className="text-[#C89F5F]" />}
-                              </span>
-                            </div>
-                            <p className="text-xs text-gray-600 leading-relaxed">
-                              {user.user_metadata?.name}<br/>
-                              {addr.address}<br/>
-                              {addr.city}, {addr.state} - {addr.pinCode}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="flex justify-between items-center mt-4">
-                        <Link href="/account/addresses" className="text-xs font-bold text-[#C89F5F] hover:underline">
-                          + Manage Addresses
+                  {user ? (
+                    addresses.length === 0 ? (
+                      <div className="bg-[#FAF8F5] p-6 rounded-xl border border-[#EAE2DB] text-center">
+                        <MapPin className="mx-auto mb-3 text-[#C89F5F]" size={24} />
+                        <p className="text-gray-600 font-medium mb-4">You have no saved addresses.</p>
+                        <Link href="/account/addresses" className="inline-flex items-center gap-2 bg-white border border-[#C89F5F] text-[#5c2a1c] px-6 py-2 rounded-lg font-bold text-sm hover:bg-[#C89F5F] hover:text-white transition-colors">
+                          <Plus size={16} /> Add Address First
                         </Link>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {addresses.map(addr => (
+                            <div 
+                              key={addr.id}
+                              onClick={() => setSelectedAddress(addr)}
+                              className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedAddress?.id === addr.id ? 'border-[#C89F5F] bg-[#FAF8F5]' : 'border-gray-100 hover:border-gray-200 bg-white'}`}
+                            >
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="font-bold text-[#3A1E14] text-sm flex items-center gap-2">
+                                  {addr.type}
+                                  {selectedAddress?.id === addr.id && <CheckCircle2 size={16} className="text-[#C89F5F]" />}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 leading-relaxed">
+                                {user.user_metadata?.name || user.name || 'Customer'}<br/>
+                                {addr.address}<br/>
+                                {addr.city}, {addr.state} - {addr.pinCode}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="flex justify-between items-center mt-4">
+                          <Link href="/account/addresses" className="text-xs font-bold text-[#C89F5F] hover:underline">
+                            + Manage Addresses
+                          </Link>
+                          <button 
+                            onClick={() => setStep(2)} 
+                            disabled={!selectedAddress}
+                            className="bg-[#3A1E14] text-white px-6 py-2.5 rounded-lg font-bold text-sm disabled:opacity-50"
+                          >
+                            Continue to Payment
+                          </button>
+                        </div>
+                      </>
+                    )
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl text-xs text-amber-900 flex justify-between items-center">
+                        <span>Already have an account? Sign in for a faster checkout.</span>
+                        <Link href="/login?redirect=/checkout" className="bg-[#3A1E14] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#2A140B] transition-colors">
+                          Sign In
+                        </Link>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-[#3A1E14]">Full Name *</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="John Doe"
+                            value={guestInfo.name}
+                            onChange={(e) => setGuestInfo({...guestInfo, name: e.target.value})}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F]"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold text-[#3A1E14]">Phone Number *</label>
+                          <input 
+                            type="tel" 
+                            required
+                            placeholder="9876543210"
+                            value={guestInfo.phone}
+                            onChange={(e) => setGuestInfo({...guestInfo, phone: e.target.value})}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-[#3A1E14]">Email Address *</label>
+                        <input 
+                          type="email" 
+                          required
+                          placeholder="john@example.com"
+                          value={guestInfo.email}
+                          onChange={(e) => setGuestInfo({...guestInfo, email: e.target.value})}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F]"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-[#3A1E14]">Street Address *</label>
+                        <input 
+                          type="text" 
+                          required
+                          placeholder="House No, Street, Area"
+                          value={guestInfo.address}
+                          onChange={(e) => setGuestInfo({...guestInfo, address: e.target.value})}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F]"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-3">
+                        <div className="space-y-1.5 col-span-1">
+                          <label className="text-xs font-bold text-[#3A1E14]">City *</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="Guwahati"
+                            value={guestInfo.city}
+                            onChange={(e) => setGuestInfo({...guestInfo, city: e.target.value})}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F]"
+                          />
+                        </div>
+                        <div className="space-y-1.5 col-span-1">
+                          <label className="text-xs font-bold text-[#3A1E14]">State *</label>
+                          <select 
+                            required
+                            value={guestInfo.state}
+                            onChange={(e) => setGuestInfo({...guestInfo, state: e.target.value})}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F] bg-white"
+                          >
+                            <option value="">Select State</option>
+                            {["Assam", "Arunachal Pradesh", "Delhi", "Karnataka", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "West Bengal"].map(s => (
+                              <option key={s} value={s}>{s}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-1.5 col-span-1">
+                          <label className="text-xs font-bold text-[#3A1E14]">Pin Code *</label>
+                          <input 
+                            type="text" 
+                            required
+                            placeholder="781001"
+                            value={guestInfo.pinCode}
+                            onChange={(e) => setGuestInfo({...guestInfo, pinCode: e.target.value})}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F]"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end mt-6">
                         <button 
-                          onClick={() => setStep(2)} 
-                          disabled={!selectedAddress}
-                          className="bg-[#3A1E14] text-white px-6 py-2.5 rounded-lg font-bold text-sm disabled:opacity-50"
+                          type="button"
+                          onClick={() => {
+                            if (!guestInfo.name || !guestInfo.email || !guestInfo.phone || !guestInfo.address || !guestInfo.city || !guestInfo.state || !guestInfo.pinCode) {
+                              alert("Please fill in all required fields.");
+                              return;
+                            }
+                            setStep(2);
+                          }}
+                          className="bg-[#3A1E14] text-white px-8 py-2.5 rounded-lg font-bold text-sm hover:bg-[#2A140B] transition-colors"
                         >
                           Continue to Payment
                         </button>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               )}
