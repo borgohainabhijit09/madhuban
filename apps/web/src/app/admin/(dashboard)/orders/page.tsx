@@ -1,12 +1,49 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Filter, RotateCcw, Eye, Trash2,
   ShoppingBag, CheckCircle, Clock, Truck,
   ChevronDown
 } from 'lucide-react';
 import Link from 'next/link';
+
+// Play dual-tone chime sound using Web Audio API
+const playNotificationSound = () => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    
+    // First tone (G5)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.value = 783.99; // G5
+    gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    
+    // Second tone (C6) after 120ms
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = 1046.50; // C6
+    gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.4);
+    
+    osc2.start(ctx.currentTime + 0.12);
+    osc2.stop(ctx.currentTime + 0.5);
+  } catch (error) {
+    console.error("Failed to play notification sound:", error);
+  }
+};
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -20,9 +57,12 @@ export default function AdminOrdersPage() {
   });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [activeOrder, setActiveOrder] = useState<any | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean, id: string | null}>({isOpen: false, id: null});
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+
+  const prevOrderCountRef = useRef<number | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -30,6 +70,11 @@ export default function AdminOrdersPage() {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/orders`, { cache: 'no-store' });
         if (res.ok) {
           const data = await res.json();
+          
+          if (prevOrderCountRef.current !== null && data.length > prevOrderCountRef.current) {
+            playNotificationSound();
+          }
+          prevOrderCountRef.current = data.length;
           setOrders(data);
           
           setKpis({
@@ -46,6 +91,10 @@ export default function AdminOrdersPage() {
       }
     };
     fetchOrders();
+
+    // Poll every 12 seconds
+    const interval = setInterval(fetchOrders, 12000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -331,7 +380,10 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="p-4 text-center">
                       <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors">
+                        <button 
+                          onClick={() => setActiveOrder(order)}
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                        >
                           <Eye size={16} />
                         </button>
                         <button 
@@ -419,6 +471,111 @@ export default function AdminOrdersPage() {
             >
               ×
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Order Details Modal */}
+      {activeOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-2xl shadow-xl flex flex-col max-h-[90vh] overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Order Details</h3>
+                <p className="text-xs font-mono text-gray-500 mt-1">ID: {activeOrder.id.toUpperCase()}</p>
+              </div>
+              <button 
+                onClick={() => setActiveOrder(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors text-xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              
+              {/* Customer & Shipping Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Customer Details</h4>
+                  <p className="text-sm font-bold text-gray-900">{activeOrder.customer?.name}</p>
+                  <p className="text-xs text-gray-600">Email: {activeOrder.customer?.email}</p>
+                  {activeOrder.customer?.phone && (
+                    <p className="text-xs text-gray-600">Phone: {activeOrder.customer?.phone}</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Shipping Address</h4>
+                  {activeOrder.address ? (
+                    <p className="text-xs text-gray-600 leading-relaxed">
+                      <strong>{activeOrder.address.type}</strong><br/>
+                      {activeOrder.address.address}<br/>
+                      {activeOrder.address.city}, {activeOrder.address.state} - {activeOrder.address.pinCode}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-400 italic">No address details available</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Order Items */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Order Items</h4>
+                <div className="border border-gray-100 rounded-xl overflow-hidden">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-gray-50 border-b border-gray-100 text-gray-500 font-bold uppercase tracking-wider">
+                        <th className="p-3">Product Name</th>
+                        <th className="p-3 text-center">Quantity</th>
+                        <th className="p-3 text-right">Unit Price</th>
+                        <th className="p-3 text-right font-bold">Total</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {activeOrder.items?.map((item: any) => (
+                        <tr key={item.id}>
+                          <td className="p-3 font-medium text-gray-900">{item.productName || "Unknown Product"}</td>
+                          <td className="p-3 text-center text-gray-600">{item.quantity}</td>
+                          <td className="p-3 text-right text-gray-600">₹{item.price}</td>
+                          <td className="p-3 text-right font-bold text-gray-900">₹{item.price * item.quantity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Pricing breakdown */}
+              <div className="border-t border-gray-100 pt-4 flex flex-col items-end gap-2 text-xs">
+                <div className="flex justify-between w-48 text-gray-500">
+                  <span>Subtotal:</span>
+                  <span className="font-bold text-gray-900">₹{(activeOrder.totalAmount - (activeOrder.shippingAmount || 0)).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between w-48 text-gray-500">
+                  <span>Shipping:</span>
+                  <span className="font-bold text-gray-900">₹{(activeOrder.shippingAmount || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between w-48 text-sm font-bold border-t border-gray-100 pt-2 text-green-700">
+                  <span>Total Amount:</span>
+                  <span>₹{activeOrder.totalAmount.toFixed(2)}</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end">
+              <button 
+                onClick={() => setActiveOrder(null)}
+                className="bg-[#3A1E14] hover:bg-[#2A080C] text-white px-6 py-2 rounded-xl text-sm font-medium transition-colors"
+              >
+                Close
+              </button>
+            </div>
+
           </div>
         </div>
       )}

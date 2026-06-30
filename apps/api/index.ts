@@ -631,8 +631,22 @@ app.get("/api/orders", async (req: Request, res: Response) => {
   try {
     const result = await pool.query(`
       SELECT o.*, 
-        json_build_object('id', u.id, 'name', u.name, 'email', u.email) as customer,
-        (SELECT json_agg(row_to_json(oi)) FROM "OrderItem" oi WHERE oi."orderId" = o.id) as items
+        json_build_object('id', u.id, 'name', u.name, 'email', u.email, 'phone', u.phone) as customer,
+        (
+          SELECT json_agg(
+            json_build_object(
+              'id', oi.id,
+              'productId', oi."productId",
+              'quantity', oi.quantity,
+              'price', oi.price,
+              'productName', p.name
+            )
+          ) 
+          FROM "OrderItem" oi 
+          JOIN "Product" p ON oi."productId" = p.id 
+          WHERE oi."orderId" = o.id
+        ) as items,
+        (SELECT row_to_json(a) FROM "Address" a WHERE a.id = o."addressId") as address
       FROM "Order" o
       JOIN "User" u ON o."userId" = u.id
       ORDER BY o."createdAt" DESC

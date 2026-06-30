@@ -146,7 +146,7 @@ export default function CheckoutPage() {
         id: orderId,
         userId: finalUserId,
         addressId: finalAddressId,
-        status: 'CONFIRMED',
+        status: 'PENDING',
         totalAmount: total,
         taxAmount: tax,
         shippingAmount: shippingCost,
@@ -272,9 +272,9 @@ export default function CheckoutPage() {
                     )
                   ) : (
                     <div className="space-y-4">
-                      <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl text-xs text-amber-900 flex justify-between items-center">
+                      <div className="bg-amber-50/50 border border-amber-100 p-4 rounded-xl text-xs text-amber-900 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
                         <span>Already have an account? Sign in for a faster checkout.</span>
-                        <Link href="/login?redirect=/checkout" className="bg-[#3A1E14] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#2A140B] transition-colors">
+                        <Link href="/login?redirect=/checkout" className="bg-[#3A1E14] text-white px-4 py-2 rounded-lg font-bold hover:bg-[#2A140B] transition-colors whitespace-nowrap">
                           Sign In
                         </Link>
                       </div>

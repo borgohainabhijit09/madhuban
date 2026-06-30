@@ -1,10 +1,8 @@
-"use client";
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Bell, Calendar as CalendarIcon, 
   ShoppingBag, IndianRupee, Users, Package, Tag,
-  TrendingUp, TrendingDown, ChevronDown
+  TrendingUp, TrendingDown, ChevronDown, Navigation, Truck, Clock
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,22 +11,63 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 
+// Play dual-tone chime sound using Web Audio API
+const playNotificationSound = () => {
+  try {
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    
+    // First tone (G5)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.value = 783.99; // G5
+    gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    
+    // Second tone (C6) after 120ms
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.value = 1046.50; // C6
+    gain2.gain.setValueAtTime(0.2, ctx.currentTime + 0.12);
+    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    
+    osc1.start(ctx.currentTime);
+    osc1.stop(ctx.currentTime + 0.4);
+    
+    osc2.start(ctx.currentTime + 0.12);
+    osc2.stop(ctx.currentTime + 0.5);
+  } catch (error) {
+    console.error("Failed to play notification sound:", error);
+  }
+};
+
 // --- COMPONENTS ---
 
-const KpiCard = ({ title, value, subtitle, icon: Icon, iconBg, trend, trendValue }: any) => (
-  <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
-    <div className="flex items-center gap-4 mb-3">
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-        <Icon size={22} className="text-current" />
+const KpiCard = ({ title, value, subtitle, icon: Icon, iconBg, href }: any) => {
+  const cardContent = (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 flex flex-col justify-between h-full hover:border-[#C89F5F] transition-all cursor-pointer">
+      <div className="flex items-center gap-4 mb-3">
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+          <Icon size={22} className="text-current" />
+        </div>
+        <div>
+          <h3 className="text-sm font-medium text-gray-500 mb-1">{title}</h3>
+          <p className="text-2xl font-bold text-gray-900 leading-none">{value}</p>
+        </div>
       </div>
-      <div>
-        <h3 className="text-sm font-medium text-gray-500 mb-1">{title}</h3>
-        <p className="text-2xl font-bold text-gray-900 leading-none">{value}</p>
-      </div>
+      {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
     </div>
-    {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
-  </div>
-);
+  );
+
+  return href ? <Link href={href}>{cardContent}</Link> : cardContent;
+};
 
 const SectionCard = ({ title, actionText, children }: any) => (
   <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full flex flex-col">
@@ -50,15 +89,32 @@ const SectionCard = ({ title, actionText, children }: any) => (
 
 export default function AdminDashboard() {
   const [data, setData] = useState<{ orders: any[], customers: any[], products: any[] } | null>(null);
+  const [trucks, setTrucks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const prevOrderCountRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && "Notification" in window) {
+      Notification.requestPermission();
+    }
+  }, []);
 
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api/dashboard`, { cache: 'no-store' });
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        const res = await fetch(`${apiUrl}/api/dashboard`, { cache: 'no-store' });
         if (res.ok) {
           const dashboardData = await res.json();
           setData(dashboardData);
+          prevOrderCountRef.current = dashboardData.orders.length;
+        }
+
+        const tRes = await fetch(`${apiUrl}/api/trucks`, { cache: 'no-store' });
+        if (tRes.ok) {
+          const tData = await tRes.json();
+          setTrucks(tData);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard:", error);
@@ -66,7 +122,41 @@ export default function AdminDashboard() {
         setLoading(false);
       }
     };
+    
     fetchDashboard();
+
+    // Poll for updates every 12 seconds
+    const interval = setInterval(async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        const res = await fetch(`${apiUrl}/api/dashboard`, { cache: 'no-store' });
+        if (res.ok) {
+          const dashboardData = await res.json();
+          
+          if (prevOrderCountRef.current !== null && dashboardData.orders.length > prevOrderCountRef.current) {
+            playNotificationSound();
+            if (Notification.permission === "granted") {
+              new Notification("New Order Received!", {
+                body: `Order #${dashboardData.orders[0].id.slice(0,6).toUpperCase()} has been placed.`,
+                icon: "/images/logo.png"
+              });
+            }
+          }
+          prevOrderCountRef.current = dashboardData.orders.length;
+          setData(dashboardData);
+        }
+
+        const tRes = await fetch(`${apiUrl}/api/trucks`, { cache: 'no-store' });
+        if (tRes.ok) {
+          const tData = await tRes.json();
+          setTrucks(tData);
+        }
+      } catch (e) {
+        console.error("Dashboard polling error:", e);
+      }
+    }, 12000);
+
+    return () => clearInterval(interval);
   }, []);
 
   if (loading || !data) {
@@ -87,6 +177,28 @@ export default function AdminDashboard() {
   const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
   const totalCustomers = customers.length;
   const activeProducts = products.filter(p => p.isActive).length;
+  const pendingOrders = orders.filter(o => o.status === 'PENDING').length;
+  const onTheWay = trucks.filter(t => t.latitude !== null && t.longitude !== null).length;
+
+  // Calculate Top Selling Products
+  const productSales: Record<string, number> = {};
+  orders.forEach(order => {
+    if (order.status !== 'CANCELLED') {
+      order.items?.forEach((item: any) => {
+        productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity;
+      });
+    }
+  });
+
+  const topSellingProducts = products
+    .map(p => ({
+      ...p,
+      unitsSold: productSales[p.id] || 0,
+      revenue: (productSales[p.id] || 0) * p.basePrice
+    }))
+    .filter(p => p.unitsSold > 0)
+    .sort((a, b) => b.unitsSold - a.unitsSold)
+    .slice(0, 5);
 
   // Order Status Data
   const orderStatusCounts = orders.reduce((acc, order) => {
@@ -156,30 +268,41 @@ export default function AdminDashboard() {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <KpiCard 
-          title="Total Orders" 
-          value={totalOrders} 
-          icon={ShoppingBag} 
-          iconBg="bg-orange-50 text-orange-600" 
-          trend="up" 
-          trendValue="12.5" 
-        />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5">
         <KpiCard 
           title="Total Revenue" 
           value={`₹${totalRevenue.toLocaleString()}`} 
           icon={IndianRupee} 
           iconBg="bg-green-50 text-green-600" 
-          trend="up" 
-          trendValue="8.4" 
+        />
+        <KpiCard 
+          title="Total Orders" 
+          value={totalOrders} 
+          icon={ShoppingBag} 
+          iconBg="bg-blue-50 text-blue-600" 
+          href="/admin/orders"
+        />
+        <KpiCard 
+          title="Pending Orders" 
+          value={pendingOrders} 
+          icon={Clock} 
+          iconBg="bg-yellow-50 text-yellow-600" 
+          href="/admin/orders"
+          subtitle="Awaiting action"
+        />
+        <KpiCard 
+          title="Trucks On Duty" 
+          value={onTheWay} 
+          icon={Navigation} 
+          iconBg="bg-indigo-50 text-indigo-600" 
+          href="/admin/tracking"
+          subtitle="Live on the way"
         />
         <KpiCard 
           title="Total Customers" 
           value={totalCustomers} 
           icon={Users} 
-          iconBg="bg-blue-50 text-blue-600" 
-          trend="up" 
-          trendValue="4.2" 
+          iconBg="bg-orange-50 text-orange-600" 
         />
         <KpiCard 
           title="Active Products" 
@@ -316,26 +439,26 @@ export default function AdminDashboard() {
       </div>
 
       {/* Bottom Row: Lists */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* New Customers */}
-        <div className="md:col-span-1 h-[350px]">
-          <SectionCard title="New Customers" actionText="View All">
+        {/* Top Selling Products */}
+        <div className="lg:col-span-1 h-[350px]">
+          <SectionCard title="Top Selling Products">
             <div className="space-y-4 overflow-y-auto h-[240px] custom-scrollbar pr-2">
-              {newCustomers.length === 0 ? (
-                 <p className="text-sm text-gray-500 text-center py-4">No new customers.</p>
+              {topSellingProducts.length === 0 ? (
+                 <p className="text-sm text-gray-500 text-center py-4">No sales data yet.</p>
               ) : (
-                newCustomers.map((customer, i) => (
+                topSellingProducts.map((item, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 bg-orange-100 text-[#C89F5F]`}>
-                      {customer.name ? customer.name.substring(0,2).toUpperCase() : 'US'}
+                    <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-gray-50 border border-gray-100 flex-shrink-0">
+                      <Image src={item.imageUrl || '/images/hero-cake.png'} alt={item.name} fill className="object-cover animate-in fade-in duration-300" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{customer.name || 'User'}</p>
-                      <p className="text-xs text-gray-500 truncate">{customer.email}</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                      <p className="text-xs text-gray-500">Units Sold: <b>{item.unitsSold}</b></p>
                     </div>
                     <div className="text-right flex-shrink-0">
-                      <p className="text-xs text-gray-400">{formatDate(customer.createdAt)}</p>
+                      <p className="text-sm font-bold text-[#2E7D32]">₹{item.revenue}</p>
                     </div>
                   </div>
                 ))
@@ -345,7 +468,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Low Stock Alert */}
-        <div className="md:col-span-1 h-[350px]">
+        <div className="lg:col-span-1 h-[350px]">
           <SectionCard title="Low Stock Alert" actionText="View All">
             <div className="space-y-4 overflow-y-auto h-[240px] custom-scrollbar pr-2">
               {lowStock.length === 0 ? (
@@ -364,6 +487,32 @@ export default function AdminDashboard() {
                       <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-50 text-red-600 border border-red-100">
                         {item.stock === 0 ? 'Out of Stock' : 'Low Stock'}
                       </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </SectionCard>
+        </div>
+
+        {/* New Customers */}
+        <div className="lg:col-span-1 h-[350px]">
+          <SectionCard title="New Customers" actionText="View All">
+            <div className="space-y-4 overflow-y-auto h-[240px] custom-scrollbar pr-2">
+              {newCustomers.length === 0 ? (
+                 <p className="text-sm text-gray-500 text-center py-4">No new customers.</p>
+              ) : (
+                newCustomers.map((customer, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 bg-orange-100 text-[#C89F5F]`}>
+                      {customer.name ? customer.name.substring(0,2).toUpperCase() : 'US'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{customer.name || 'User'}</p>
+                      <p className="text-xs text-gray-500 truncate">{customer.email}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xs text-gray-400">{formatDate(customer.createdAt)}</p>
                     </div>
                   </div>
                 ))
