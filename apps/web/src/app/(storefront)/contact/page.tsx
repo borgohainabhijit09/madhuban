@@ -170,7 +170,7 @@ export default function ContactPage() {
                     </div>
                     <div>
                       <p className="text-[13px] font-bold text-[#3A1E14] mb-1">Email</p>
-                      <p className="text-[15px] font-semibold text-[#3A1E14] mb-1">hello@hastytasty.com</p>
+                      <p className="text-[15px] font-semibold text-[#3A1E14] mb-1">hello@madhubanbakery.com</p>
                       <p className="text-[12px] text-gray-500">We reply within 24 hours</p>
                     </div>
                   </div>
@@ -193,9 +193,9 @@ export default function ContactPage() {
                     <div>
                       <p className="text-[13px] font-bold text-[#3A1E14] mb-1">Address</p>
                       <p className="text-[13px] text-gray-600 leading-relaxed max-w-[200px]">
-                        Hasty Tasty Bakery,<br />
-                        123 Sweet Street,<br />
-                        Kolkata, West Bengal 700001,<br />
+                        Madhuban - Big Bakery,<br />
+                        Main Road, Tezpur,<br />
+                        Assam 784001,<br />
                         India
                       </p>
                     </div>
@@ -279,7 +279,7 @@ export default function ContactPage() {
                     <div className="flex-1 h-px bg-[#C89F5F]"></div>
                   </div>
                   <p className="text-[#EBE3D5] text-[14px]">Experience our magic in person at our bakery.</p>
-                  <Link href="https://maps.app.goo.gl/qe7pKTnZEgbojpJH6" target="_blank" rel="noopener noreferrer" className="bg-[#C89F5F] hover:bg-[#B38C4F] text-[#3A1E14] font-semibold text-[13px] px-6 py-2.5 rounded-lg flex items-center gap-2 transition-colors inline-flex">
+                  <Link href="https://maps.app.goo.gl/KP4hjGaW6fGaKdXQ9" target="_blank" rel="noopener noreferrer" className="bg-[#C89F5F] hover:bg-[#B38C4F] text-[#3A1E14] font-semibold text-[13px] px-6 py-2.5 rounded-lg flex items-center gap-2 transition-colors inline-flex">
                     Store Locator <ArrowRight size={14} />
                   </Link>
                 </div>

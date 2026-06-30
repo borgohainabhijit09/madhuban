@@ -498,7 +498,7 @@ export default function Home() {
                   name: "Rahul Mehta",
                 },
                 {
-                  quote: "Fresh, premium and perfectly baked. Hasty Tasty never disappoints!",
+                  quote: "Fresh, premium and perfectly baked. Madhuban never disappoints!",
                   name: "Sneha Iyer",
                 },
                 {

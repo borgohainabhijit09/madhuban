@@ -22,7 +22,7 @@ function SuccessContent() {
 
         <h1 className="font-heading text-3xl font-bold text-[#3A1E14] mb-3">Order Confirmed!</h1>
         <p className="text-gray-500 mb-8 leading-relaxed">
-          Thank you for choosing Hasty Tasty! Your order has been successfully placed and is being processed. 
+          Thank you for choosing Madhuban! Your order has been successfully placed and is being processed. 
           We'll notify you as soon as it's out for delivery.
         </p>
 

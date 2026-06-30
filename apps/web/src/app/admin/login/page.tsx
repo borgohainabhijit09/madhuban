@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
                 type="email" 
                 name="email"
                 required
-                placeholder="admin@hastytasty.com"
+                placeholder="admin@madhubanbakery.com"
                 className="w-full border border-[#EBE3D5] rounded-xl pl-11 pr-4 py-3 text-[14px] outline-none focus:border-[#C89F5F] transition-colors bg-[#F7F5F0]" 
               />
             </div>

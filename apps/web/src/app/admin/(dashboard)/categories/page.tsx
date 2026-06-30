@@ -42,7 +42,7 @@ export default function AdminCategoriesPage() {
     imageUrl: '',
     isActive: true,
     isB2C: true,
-    isB2B: false
+    isB2B: true
   });
   const [formSaving, setFormSaving] = useState(false);
 
@@ -93,7 +93,7 @@ export default function AdminCategoriesPage() {
         imageUrl: '',
         isActive: true,
         isB2C: true,
-        isB2B: false
+        isB2B: true
       });
     }
     setIsModalOpen(true);
@@ -262,7 +262,7 @@ export default function AdminCategoriesPage() {
             className="w-full bg-white border border-gray-200 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-[#C89F5F]"
           >
             <option value="ALL">All Types</option>
-            <option value="B2C">Retail (B2C)</option>
+            <option value="B2C">Retail</option>
             <option value="B2B">Wholesale (B2B)</option>
           </select>
         </div>
@@ -514,38 +514,6 @@ export default function AdminCategoriesPage() {
                       onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
                     />
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900">Retail (B2C) Storefront</h4>
-                    <p className="text-xs text-gray-500">Show this category to regular retail customers</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="sr-only peer" 
-                      checked={formData.isB2C}
-                      onChange={(e) => setFormData({...formData, isB2C: e.target.checked})}
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900">Wholesale (B2B) Portal</h4>
-                    <p className="text-xs text-gray-500">Show this category on the B2B ordering portal</p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
-                      className="sr-only peer" 
-                      checked={formData.isB2B}
-                      onChange={(e) => setFormData({...formData, isB2B: e.target.checked})}
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
                   </label>
                 </div>
               </form>

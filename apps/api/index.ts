@@ -64,7 +64,7 @@ app.use(express.json());
 
 // ── HEALTH CHECK ──
 app.get("/", (_req: Request, res: Response) => {
-  res.send("Hasty Tasty API Running");
+  res.send("Madhuban API Running");
 });
 
 // ── CATEGORIES ──

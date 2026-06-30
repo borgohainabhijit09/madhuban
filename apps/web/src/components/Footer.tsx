@@ -6,13 +6,13 @@ export default function Footer() {
     <footer className="bg-white text-[#3A1E14]">
       {/* Main Footer Body */}
       <div className="max-w-[1260px] mx-auto px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {/* Col 1 — Brand */}
           <div className="space-y-4 col-span-2 md:col-span-1">
             <div className="relative w-24 h-10">
               <Image
                 src="/images/logo.png"
-                alt="Hasty Tasty Logo"
+                alt="Madhuban Logo"
                 fill
                 sizes="96px"
                 className="object-contain object-left"
@@ -50,21 +50,6 @@ export default function Footer() {
                   <Link href={`/shop?category=${item.toLowerCase().replace(" ", "-")}`} className="text-gray-500 text-xs hover:text-[#C89F5F] transition-colors">
                     {item}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Col 3 — B2B Wholesale */}
-          <div className="space-y-4">
-            <h4 className="text-[#C89F5F] text-[10px] font-bold uppercase tracking-[0.2em]">B2B Wholesale</h4>
-            <ul className="space-y-2.5">
-              {[
-                { label: "B2B Portal",   href: "/b2b" },
-                { label: "Register Partner", href: "/signup?b2b=true" },
-              ].map((l) => (
-                <li key={l.label}>
-                  <Link href={l.href} className="text-gray-500 text-xs hover:text-[#C89F5F] transition-colors">{l.label}</Link>
                 </li>
               ))}
             </ul>
@@ -109,7 +94,7 @@ export default function Footer() {
 
       {/* Bottom Bar */}
       <div className="max-w-[1260px] mx-auto px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-        <p className="text-[11px] text-gray-500">&copy; 2026 Hasty Tasty. All Rights Reserved.</p>
+        <p className="text-[11px] text-gray-500">&copy; 2026 Madhuban. All Rights Reserved.</p>
         <p className="text-[11px] text-gray-500">
           Beautifully designed by <a href="https://sygmiainnovative.co.in/" target="_blank" rel="noopener noreferrer" className="hover:text-[#C89F5F] transition-colors underline underline-offset-2">Sygmia Innovative</a>
         </p>

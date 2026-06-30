@@ -15,12 +15,25 @@ export default function PWAInstaller() {
   useEffect(() => {
     setMounted(true);
 
-    // 1. Register Service Worker
+    // 1. Register Service Worker in production, or unregister in development
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/sw.js")
-        .then((reg) => console.log("Service Worker registered successfully:", reg.scope))
-        .catch((err) => console.error("Service Worker registration failed:", err));
+      if (process.env.NODE_ENV === "production") {
+        navigator.serviceWorker
+          .register("/sw.js")
+          .then((reg) => console.log("Service Worker registered successfully:", reg.scope))
+          .catch((err) => console.error("Service Worker registration failed:", err));
+      } else {
+        // In development, unregister any active service workers to avoid HMR/caching issues
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister().then((success) => {
+              if (success) {
+                console.log("Service Worker unregistered successfully in development.");
+              }
+            });
+          }
+        });
+      }
     }
 
     // 2. Check if already running in standalone mode (installed)
@@ -97,7 +110,7 @@ export default function PWAInstaller() {
           <div className="relative w-48 h-20 bg-white/5 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
             <Image
               src="/images/logo.png"
-              alt="Hasty Tasty Logo"
+              alt="Madhuban Logo"
               fill
               className="object-contain p-2"
               priority
@@ -108,14 +121,14 @@ export default function PWAInstaller() {
         {/* Heading */}
         <div className="space-y-3">
           <p className="text-[#C89F5F] tracking-[0.2em] text-[11px] font-bold uppercase">
-            Premium Luxury Bakery
+            Premium Big Bakery
           </p>
           <h2 className="text-3xl font-heading font-bold text-white leading-tight">
             Install the App <br />
             to Continue
           </h2>
           <p className="text-gray-300 text-sm leading-relaxed max-w-xs mx-auto">
-            To enjoy a faster, offline-capable, and premium experience, please install the Hasty Tasty app on your device.
+            To enjoy a faster, offline-capable, and premium experience, please install the Madhuban app on your device.
           </p>
         </div>
 
@@ -147,7 +160,7 @@ export default function PWAInstaller() {
                 className="w-full bg-[#C89F5F] hover:bg-[#b0884b] text-[#21050A] font-bold py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02]"
               >
                 <ArrowDownToLine size={18} />
-                Install Hasty Tasty
+                Install Madhuban
               </button>
 
               {showTip && (

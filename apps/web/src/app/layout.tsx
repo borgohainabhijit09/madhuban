@@ -15,8 +15,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Hasty Tasty | Premium Luxury Bakery",
-  description: "Experience the finest bakery delights crafted with passion and premium ingredients.",
+  title: "Madhuban | Premium Big Bakery",
+  description: "Experience the finest bakery delights from Madhuban (Big Bakery) in Tezpur, Assam.",
   icons: {
     icon: "/favicon.ico",
   },
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Hasty Tasty",
+    title: "Madhuban",
   },
 };
 

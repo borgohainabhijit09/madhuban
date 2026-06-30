@@ -140,7 +140,7 @@ export default function Header() {
               <HelpCircle size={14} className="text-[#C89F5F]" /> <span>Help Center</span>
             </Link>
             <a 
-              href="https://maps.app.goo.gl/71xybeyPSXtLXZ4N8" 
+              href="https://maps.app.goo.gl/KP4hjGaW6fGaKdXQ9" 
               target="_blank" 
               rel="noopener noreferrer" 
               className="flex items-center gap-2 hover:text-white transition-colors"
@@ -158,7 +158,7 @@ export default function Header() {
             <Link href="/" className="relative w-28 h-10 sm:w-36 sm:h-14 md:w-44 md:h-16 block">
               <Image
                 src="/images/logo.png"
-                alt="Hasty Tasty Logo"
+                alt="Madhuban Logo"
                 fill
                 sizes="(max-width: 640px) 112px, (max-width: 768px) 144px, 176px"
                 className="object-contain object-left"
@@ -220,11 +220,7 @@ export default function Header() {
               </div>
             </div>
 
-            {userRole !== 'CUSTOMER' && (
-              <Link href="/b2b" className="hover:text-[#C89F5F] transition-colors">
-                Wholesale
-              </Link>
-            )}
+
             <Link href="/about" className="hover:text-[#C89F5F] transition-colors">
               About Us
             </Link>
@@ -483,9 +479,7 @@ export default function Header() {
                     )}
                   </AnimatePresence>
                 </div>
-                {userRole !== 'CUSTOMER' && (
-                  <Link href="/b2b" className="text-[#3A1E14] font-medium text-lg border-b border-gray-50 pb-4" onClick={() => setIsMobileMenuOpen(false)}>Wholesale / Corporate</Link>
-                )}
+
                 <Link href="/about" className="text-[#3A1E14] font-medium text-lg border-b border-gray-50 pb-4" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
                 <Link href="/contact" className="text-[#3A1E14] font-medium text-lg pb-4" onClick={() => setIsMobileMenuOpen(false)}>Contact</Link>
               </div>

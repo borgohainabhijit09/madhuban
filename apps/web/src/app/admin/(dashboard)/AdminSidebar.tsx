@@ -23,9 +23,6 @@ const sidebarLinks = [
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Categories', href: '/admin/categories', icon: Grid },
   { name: 'Customers', href: '/admin/customers', icon: Users },
-  { name: 'Bulk Orders (B2B)', href: '/admin/b2b', icon: Briefcase },
-  { name: 'B2B Requests', href: '/admin/b2b-requests', icon: Briefcase },
-  { name: 'Enquiries', href: '/admin/enquiries', icon: MessageSquare },
   { name: 'Reports', href: '/admin/reports', icon: BarChart2 },
   { name: 'Shipping', href: '/admin/shipping', icon: Truck },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
@@ -47,9 +44,9 @@ export default function AdminSidebar({ initials, userName }: { initials: string;
       {/* Logo Area */}
       <div className="p-6 flex flex-col items-center justify-center border-b border-white/10 mb-4">
         <div className="relative w-24 h-12 mb-2">
-           <Image src="/images/logo.png" alt="Hasty Tasty Logo" fill sizes="96px" className="object-contain" priority />
+           <Image src="/images/logo.png" alt="Madhuban Logo" fill sizes="96px" className="object-contain" priority />
         </div>
-        <p className="text-[#C89F5F] text-[10px] uppercase tracking-widest font-semibold mt-1">Taster's Pride</p>
+        <p className="text-[#C89F5F] text-[10px] uppercase tracking-widest font-semibold mt-1">Big Bakery</p>
       </div>
 
       {/* Navigation */}

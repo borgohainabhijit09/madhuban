@@ -51,7 +51,7 @@ export const useCartStore = create<CartState>()(
       setDrawerOpen: (isOpen) => set({ isDrawerOpen: isOpen }),
     }),
     {
-      name: 'hasty-tasty-cart', // unique name for localStorage key
+      name: 'madhuban-cart', // unique name for localStorage key
     }
   )
 );

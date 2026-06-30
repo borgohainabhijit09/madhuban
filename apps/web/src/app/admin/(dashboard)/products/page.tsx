@@ -729,7 +729,7 @@ export default function AdminProductsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[13px] font-semibold text-gray-700">Base Price (₹) *</label>
                     <input 
@@ -738,17 +738,6 @@ export default function AdminProductsPage() {
                       min="0"
                       value={formData.basePrice}
                       onChange={(e) => setFormData({...formData, basePrice: parseFloat(e.target.value) || 0})}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F] focus:ring-1 focus:ring-[#C89F5F]"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[13px] font-semibold text-gray-700">B2B Price (₹)</label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      placeholder="Optional"
-                      value={formData.b2bPrice}
-                      onChange={(e) => setFormData({...formData, b2bPrice: e.target.value})}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#C89F5F] focus:ring-1 focus:ring-[#C89F5F]"
                     />
                   </div>

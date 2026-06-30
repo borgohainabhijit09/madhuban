@@ -140,7 +140,7 @@ export default function LoginPage() {
           <div>
             <div className="text-center mb-8">
               <h1 className="text-3xl font-heading font-bold text-[#3A1E14] mb-2">Welcome Back</h1>
-              <p className="text-gray-500 text-[14px]">Sign in to continue to Hasty Tasty.</p>
+              <p className="text-gray-500 text-[14px]">Sign in to continue to Madhuban.</p>
             </div>
 
             {error && (

@@ -14,10 +14,10 @@ const fadeInUp = {
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
-
-  const [isB2B, setIsB2B] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [redirectTo, setRedirectTo] = useState("/");
+
+  const isB2B = false; // B2B signup is disabled
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -25,9 +25,6 @@ export default function SignupPage() {
       const redir = params.get("redirect");
       if (redir) {
         setRedirectTo(redir);
-      }
-      if (params.get("b2b") === "true") {
-        setIsB2B(true);
       }
     }
   }, []);
@@ -38,23 +35,11 @@ export default function SignupPage() {
     setSuccess(null);
     
     try {
-      // Switch between regular and b2b signup actions
-      let result;
-      if (isB2B) {
-        const { b2bSignup } = await import('../login/actions');
-        result = await b2bSignup(formData);
-        if (result?.success) {
-          setSuccess("Thank you! Your B2B wholesale application has been submitted and is currently pending admin approval. We will contact you shortly.");
-          setIsPending(false);
-          return;
-        }
-      } else {
-        const { signup } = await import('../login/actions');
-        result = await signup(formData);
-        if (result?.success) {
-          window.location.replace(redirectTo);
-          return;
-        }
+      const { signup } = await import('../login/actions');
+      const result = await signup(formData);
+      if (result?.success) {
+        window.location.replace(redirectTo);
+        return;
       }
       
       if (result?.error) {
@@ -77,22 +62,7 @@ export default function SignupPage() {
       >
         <div className="text-center mb-8">
           <h1 className="text-3xl font-heading font-bold text-[#3A1E14] mb-2">Create Account</h1>
-          <p className="text-gray-500 text-[14px]">Join Hasty Tasty to place orders and more.</p>
-        </div>
-
-        <div className="flex bg-[#F0EBE1] p-1 rounded-xl mb-6">
-          <button 
-            className={`flex-1 text-sm py-2 rounded-lg font-medium transition-colors ${!isB2B ? 'bg-white shadow-sm text-[#3A1E14]' : 'text-gray-500 hover:text-[#3A1E14]'}`}
-            onClick={() => setIsB2B(false)}
-          >
-            Customer
-          </button>
-          <button 
-            className={`flex-1 text-sm py-2 rounded-lg font-medium transition-colors ${isB2B ? 'bg-white shadow-sm text-[#3A1E14]' : 'text-gray-500 hover:text-[#3A1E14]'}`}
-            onClick={() => setIsB2B(true)}
-          >
-            Wholesale / B2B
-          </button>
+          <p className="text-gray-500 text-[14px]">Join Madhuban to place orders and more.</p>
         </div>
 
         {error && (
@@ -157,62 +127,12 @@ export default function SignupPage() {
               />
             </div>
 
-            {isB2B && (
-              <div className="pt-4 mt-4 border-t border-[#F0EBE1] space-y-4">
-                <h3 className="text-sm font-bold text-[#3A1E14]">Business Information</h3>
-                
-                <div className="space-y-1.5 relative">
-                  <label className="text-[13px] font-semibold text-[#3A1E14]">Registered Business Name *</label>
-                  <input 
-                    type="text" 
-                    name="businessName"
-                    required
-                    placeholder="XYZ Enterprises Pvt Ltd"
-                    className="w-full border border-[#EBE3D5] rounded-xl px-4 py-3 text-[14px] outline-none focus:border-[#C89F5F] transition-colors bg-[#FAF8F5]" 
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5 relative">
-                    <label className="text-[13px] font-semibold text-[#3A1E14]">GST Number *</label>
-                    <input 
-                      type="text" 
-                      name="gstNumber"
-                      required
-                      placeholder="22AAAAA0000A1Z5"
-                      className="w-full border border-[#EBE3D5] rounded-xl px-4 py-3 text-[14px] outline-none focus:border-[#C89F5F] transition-colors bg-[#FAF8F5]" 
-                    />
-                  </div>
-                  <div className="space-y-1.5 relative">
-                    <label className="text-[13px] font-semibold text-[#3A1E14]">Trade License</label>
-                    <input 
-                      type="text" 
-                      name="tradeLicense"
-                      placeholder="Optional"
-                      className="w-full border border-[#EBE3D5] rounded-xl px-4 py-3 text-[14px] outline-none focus:border-[#C89F5F] transition-colors bg-[#FAF8F5]" 
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 relative">
-                  <label className="text-[13px] font-semibold text-[#3A1E14]">Contact Person *</label>
-                  <input 
-                    type="text" 
-                    name="contactPerson"
-                    required
-                    placeholder="John Doe"
-                    className="w-full border border-[#EBE3D5] rounded-xl px-4 py-3 text-[14px] outline-none focus:border-[#C89F5F] transition-colors bg-[#FAF8F5]" 
-                  />
-                </div>
-              </div>
-            )}
-
             <button 
               type="submit" 
               disabled={isPending}
               className="w-full bg-[#4A171E] hover:bg-[#330F13] disabled:opacity-70 disabled:cursor-not-allowed text-white font-medium text-[15px] py-4 rounded-xl flex items-center justify-center gap-2 transition-colors mt-6"
             >
-              {isPending ? 'Submitting...' : (isB2B ? 'Submit B2B Application' : 'Sign Up')} <ArrowRight size={16} />
+              {isPending ? 'Submitting...' : 'Sign Up'} <ArrowRight size={16} />
             </button>
           </form>
         )}

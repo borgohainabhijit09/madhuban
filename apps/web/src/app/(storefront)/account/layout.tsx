@@ -89,8 +89,8 @@ export default function AccountLayout({ children }: { children: React.ReactNode 
                 </div>
                 <div className="flex items-center gap-3">
                   <Mail size={14} className="text-[#5c2a1c]" />
-                  <a href="mailto:hello@hastytasty.com" className="font-bold text-[#3A1E14] text-xs hover:underline">
-                    hello@hastytasty.com
+                  <a href="mailto:hello@madhubanbakery.com" className="font-bold text-[#3A1E14] text-xs hover:underline">
+                    hello@madhubanbakery.com
                   </a>
                 </div>
               </div>

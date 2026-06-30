@@ -159,7 +159,7 @@ export default function B2BPage() {
                 <span className="text-[#C89F5F] block">Better Business.</span>
               </h1>
               <p className="text-gray-600 text-[13px] md:text-[14px] leading-relaxed max-w-[420px] mb-8">
-                Join hands with Hasty Tasty for premium quality bakery products at exclusive wholesale prices.
+                Join hands with Madhuban for premium quality bakery products at exclusive wholesale prices.
               </p>
               {/* Features row */}
               <div className="flex flex-wrap items-center gap-8 md:gap-10">

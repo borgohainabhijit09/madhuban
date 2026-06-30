@@ -1,4 +1,4 @@
-require('dotenv').config({ path: './apps/web/.env.local' });
+require('dotenv').config({ path: './apps/web/.env' });
 const { createClient } = require('@supabase/supabase-js');
 const { Pool } = require('pg');
 
@@ -10,7 +10,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 async function createAdmin() {
   console.log("Signing up admin user...");
   const { data, error } = await supabase.auth.signUp({
-    email: 'admin@hastytasty.com',
+    email: 'admin@madhuban.in',
     password: 'admin123',
     options: {
       data: {
@@ -36,7 +36,7 @@ async function createAdmin() {
   // Wait, our backend doesn't have a trigger. The frontend action has the logic.
   // So we'll use the pg pool to insert/update the public.User table directly.
   
-  require('dotenv').config({ path: './packages/database/.env' });
+  require('dotenv').config({ path: './.env' });
   const dbUrl = process.env.DATABASE_URL || process.env.DIRECT_URL;
   
   if (!dbUrl) {
@@ -54,12 +54,12 @@ async function createAdmin() {
          INSERT INTO "User" (id, email, password, name, role, "updatedAt")
          VALUES ($1, $2, $3, $4, 'SUPER_ADMIN', NOW())
          ON CONFLICT (email) DO UPDATE SET role = 'SUPER_ADMIN';
-       `, [userId, 'admin@hastytasty.com', 'admin123', 'Abhijit Borgohain']);
+       `, [userId, 'admin@madhuban.in', 'admin123', 'Abhijit Borgohain']);
     } else {
        // If already exists, just update role
-       console.log("Updating role for admin@hastytasty.com to SUPER_ADMIN...");
+       console.log("Updating role for admin@madhuban.in to SUPER_ADMIN...");
        await pool.query(`
-         UPDATE "User" SET role = 'SUPER_ADMIN' WHERE email = 'admin@hastytasty.com';
+         UPDATE "User" SET role = 'SUPER_ADMIN' WHERE email = 'admin@madhuban.in';
        `);
     }
     console.log("Admin setup complete!");

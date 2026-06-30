@@ -48,7 +48,7 @@ export default function AboutPage() {
 
               <div className="space-y-4 text-gray-600 text-[15px] leading-relaxed max-w-lg">
                 <p>
-                  Hasty Tasty was born out of a simple belief – that every celebration deserves exceptional taste.
+                  Madhuban was born out of a simple belief – that every celebration deserves exceptional taste.
                 </p>
                 <p>
                   From our humble beginnings to becoming a trusted name, we continue to bake happiness into every creation.
@@ -176,7 +176,7 @@ export default function AboutPage() {
               <div className="flex-1 h-px bg-[#C89F5F]"></div>
             </div>
             <h2 className="text-3xl md:text-4xl font-heading font-bold text-[#3A1E14] mb-4">
-              The Hasty Tasty <span className="text-[#C89F5F]">Promise</span>
+              The Madhuban <span className="text-[#C89F5F]">Promise</span>
             </h2>
             <p className="text-gray-600 text-[14px] max-w-lg mx-auto">
               We don't just bake. We create experiences that you can taste and cherish.
@@ -301,8 +301,8 @@ export default function AboutPage() {
                 <div className="absolute inset-2 rounded-full border border-dashed border-[#C89F5F]/40 flex items-center justify-center">
                   <div className="text-center">
                     <p className="text-[9px] uppercase tracking-widest text-[#C89F5F] font-bold mb-2">Crafted with Love</p>
-                    <h3 className="font-heading text-2xl font-bold text-[#3A1E14] mb-1 leading-none">Hasty Tasty</h3>
-                    <p className="text-[8px] uppercase tracking-[0.2em] text-gray-500 font-medium">Taster's Pride</p>
+                    <h3 className="font-heading text-2xl font-bold text-[#3A1E14] mb-1 leading-none">Madhuban</h3>
+                    <p className="text-[8px] uppercase tracking-[0.2em] text-gray-500 font-medium">Big Bakery</p>
                   </div>
                 </div>
               </div>

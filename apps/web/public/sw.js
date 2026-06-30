@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hastytasty-cache-v1';
+const CACHE_NAME = 'madhuban-cache-v1';
 const ASSETS = [
   '/',
   '/manifest.json',
@@ -28,9 +28,30 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests and http/https schemes
+  if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+
+  // Exclude development-specific paths, hot-reloading (HMR), and API routes
+  if (
+    url.pathname.startsWith('/_next') ||
+    url.pathname.includes('hmr') ||
+    url.pathname.includes('turbopack') ||
+    url.pathname.startsWith('/api')
+  ) {
+    return;
+  }
+
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
+    fetch(event.request).catch(async (err) => {
+      const cachedResponse = await caches.match(event.request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      throw err;
     })
   );
 });

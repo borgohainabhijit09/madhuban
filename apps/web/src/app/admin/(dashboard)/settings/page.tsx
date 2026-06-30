@@ -61,11 +61,11 @@ export default function AdminSettingsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
-                  <input type="text" defaultValue="Hasty Tasty - Taster's Pride" className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#C89F5F]/20 focus:border-[#C89F5F]" />
+                  <input type="text" defaultValue="Madhuban - Big Bakery" className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#C89F5F]/20 focus:border-[#C89F5F]" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Support Email</label>
-                  <input type="email" defaultValue="support@hastytasty.com" className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#C89F5F]/20 focus:border-[#C89F5F]" />
+                  <input type="email" defaultValue="support@madhubanbakery.com" className="w-full bg-gray-50 border border-gray-200 rounded-lg py-2.5 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#C89F5F]/20 focus:border-[#C89F5F]" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>

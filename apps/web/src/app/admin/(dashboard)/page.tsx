@@ -375,7 +375,7 @@ export default function AdminDashboard() {
       </div>
       
       <div className="mt-4 text-center text-xs text-gray-400 pb-4">
-        © 2025 Hasty Tasty. All rights reserved. <span className="float-right mr-4">Made with ❤️ for your business</span>
+        © 2025 Madhuban. All rights reserved. <span className="float-right mr-4">Made with ❤️ for your business</span>
       </div>
       
     </div>
