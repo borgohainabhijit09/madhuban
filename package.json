@@ -1,0 +1,21 @@
+{
+  "name": "hastytasty",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "npm@10.8.2",
+  "scripts": {
+    "dev": "npx concurrently \"npm run dev -w apps/web\" \"npm run dev -w apps/api\"",
+    "build": "turbo run build"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.20.0",
+    "turbo": "^2.1.2"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "pg": "^8.21.0"
+  }
+}
