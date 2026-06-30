@@ -922,6 +922,84 @@ app.get("/api/users/me", async (req: Request, res: Response) => {
 // ── BULK DELETE ENDPOINTS ──
 // Moved to respective sections to prevent Express routing conflicts with :id routes.
 
+// ── TRUCKS & LIVE TRACKING ENDPOINTS ──
+
+// 1. Create a new truck (Admin)
+app.post("/api/trucks", async (req: Request, res: Response) => {
+  try {
+    const { truckNumber, driverName, driverPhone } = req.body;
+    if (!truckNumber || !driverName) {
+      return res.status(400).json({ error: "Truck number and driver name are required" });
+    }
+
+    const id = 'trk_' + Math.random().toString(36).substring(2, 10);
+    const result = await pool.query(`
+      INSERT INTO "Truck" (id, "truckNumber", "driverName", "driverPhone", "isActive")
+      VALUES ($1, $2, $3, $4, true)
+      RETURNING *
+    `, [id, truckNumber.trim().toUpperCase(), driverName.trim(), driverPhone ? driverPhone.trim() : null]);
+
+    return res.status(201).json(result.rows[0]);
+  } catch (error: any) {
+    console.error("Error creating truck:", error);
+    if (error.code === '23505') { // Unique violation
+      return res.status(400).json({ error: "Truck number already exists" });
+    }
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 2. Get all trucks with their latest location (Admin)
+app.get("/api/trucks", async (_req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`
+      SELECT t.*, 
+             l.latitude, l.longitude, l.speed, l."updatedAt" as "locationUpdatedAt"
+      FROM "Truck" t
+      LEFT JOIN LATERAL (
+        SELECT latitude, longitude, speed, "updatedAt"
+        FROM "DriverLocation"
+        WHERE "truckId" = t.id
+        ORDER BY "updatedAt" DESC
+        LIMIT 1
+      ) l ON true
+      ORDER BY t."createdAt" DESC
+    `);
+    return res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching trucks:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// 3. Post a new location update (Driver)
+app.post("/api/trucks/location", async (req: Request, res: Response) => {
+  try {
+    const { truckId, latitude, longitude, speed } = req.body;
+    if (!truckId || latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ error: "Truck ID, latitude, and longitude are required" });
+    }
+
+    // Verify truck exists
+    const truckCheck = await pool.query('SELECT id FROM "Truck" WHERE id = $1', [truckId]);
+    if (truckCheck.rows.length === 0) {
+      return res.status(404).json({ error: "Truck not found" });
+    }
+
+    const id = 'loc_' + Math.random().toString(36).substring(2, 10);
+    const result = await pool.query(`
+      INSERT INTO "DriverLocation" (id, "truckId", latitude, longitude, speed, "updatedAt")
+      VALUES ($1, $2, $3, $4, $5, NOW())
+      RETURNING *
+    `, [id, truckId, parseFloat(latitude), parseFloat(longitude), speed !== undefined ? parseFloat(speed) : null]);
+
+    return res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating location:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Trigger nodemon restart after types installation
 const PORT = process.env.PORT || 8080;
 if (!process.env.VERCEL) {

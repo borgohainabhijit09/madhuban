@@ -15,7 +15,8 @@ import {
   BarChart2, 
   Settings, 
   LogOut,
-  Truck
+  Truck,
+  Navigation
 } from 'lucide-react';
 
 const sidebarLinks = [
@@ -26,6 +27,7 @@ const sidebarLinks = [
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Reports', href: '/admin/reports', icon: BarChart2 },
   { name: 'Shipping', href: '/admin/shipping', icon: Truck },
+  { name: 'Live Tracking', href: '/admin/tracking', icon: Navigation },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 

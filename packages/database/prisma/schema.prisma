@@ -222,3 +222,23 @@ model ShippingRate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+model Truck {
+  id           String           @id @default(cuid())
+  truckNumber  String           @unique
+  driverName   String
+  driverPhone  String?
+  isActive     Boolean          @default(true)
+  locations    DriverLocation[]
+  createdAt    DateTime         @default(now())
+}
+
+model DriverLocation {
+  id        String   @id @default(cuid())
+  truckId   String
+  truck     Truck    @relation(fields: [truckId], references: [id], onDelete: Cascade)
+  latitude  Float
+  longitude Float
+  speed     Float?
+  updatedAt DateTime @default(now())
+}
