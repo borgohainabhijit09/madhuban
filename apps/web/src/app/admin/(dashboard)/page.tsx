@@ -178,7 +178,10 @@ export default function AdminDashboard() {
   const totalCustomers = customers.length;
   const activeProducts = products.filter(p => p.isActive).length;
   const pendingOrders = orders.filter(o => o.status === 'PENDING').length;
-  const onTheWay = trucks.filter(t => t.latitude !== null && t.longitude !== null).length;
+  const onTheWay = trucks.filter(t => t.latitude !== null && 
+                                      t.longitude !== null && 
+                                      t.locationUpdatedAt && 
+                                      (Date.now() - new Date(t.locationUpdatedAt).getTime() < 120000)).length;
 
   // Calculate Top Selling Products
   const productSales: Record<string, number> = {};

@@ -60,19 +60,42 @@ export default function TrackingMap({ trucks }: TrackingMapProps) {
     const map = mapRef.current;
     const currentMarkers = markersRef.current;
 
-    // Custom truck icon
-    const truckIcon = L.icon({
-      iconUrl: "https://cdn-icons-png.flaticon.com/512/1048/1048314.png", // Delivery truck icon
-      iconSize: [38, 38],
-      iconAnchor: [19, 38],
-      popupAnchor: [0, -38],
+    // Custom truck icon using secure inline SVG (brand colors)
+    const truckIcon = L.divIcon({
+      html: `
+        <div style="
+          background-color: #3D141C;
+          border: 2px solid #C89F5F;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        ">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF" width="20" height="20">
+            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm12 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm2-5.5h-3V9h3v4z"/>
+          </svg>
+        </div>
+      `,
+      className: "custom-truck-marker",
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      popupAnchor: [0, -18],
     });
 
     const activeCoords: L.LatLngExpression[] = [];
 
     trucks.forEach((truck) => {
-      if (truck.latitude !== null && truck.longitude !== null) {
-        const latLng: L.LatLngExpression = [truck.latitude, truck.longitude];
+      // Check if location was updated in the last 2 minutes
+      const isOnline = truck.latitude !== null && 
+                       truck.longitude !== null && 
+                       truck.locationUpdatedAt && 
+                       (Date.now() - new Date(truck.locationUpdatedAt).getTime() < 120000);
+
+      if (isOnline) {
+        const latLng: L.LatLngExpression = [truck.latitude!, truck.longitude!];
         activeCoords.push(latLng);
 
         const popupContent = `
@@ -106,7 +129,8 @@ export default function TrackingMap({ trucks }: TrackingMapProps) {
 
     // Clean up markers for trucks that are no longer in the list
     Object.keys(currentMarkers).forEach((id) => {
-      if (!trucks.find((t) => t.id === id)) {
+      const exists = trucks.find((t) => t.id === id);
+      if (!exists) {
         map.removeLayer(currentMarkers[id]);
         delete currentMarkers[id];
       }

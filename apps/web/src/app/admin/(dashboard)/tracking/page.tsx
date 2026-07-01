@@ -136,7 +136,10 @@ export default function TrackingPage() {
                 </div>
               ) : (
                 trucks.map((truck) => {
-                  const isOnline = truck.latitude !== null && truck.longitude !== null;
+                  const isOnline = truck.latitude !== null && 
+                                   truck.longitude !== null && 
+                                   truck.locationUpdatedAt && 
+                                   (Date.now() - new Date(truck.locationUpdatedAt).getTime() < 120000);
                   return (
                     <div
                       key={truck.id}
