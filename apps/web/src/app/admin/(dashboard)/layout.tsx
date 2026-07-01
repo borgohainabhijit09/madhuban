@@ -1,4 +1,5 @@
 import AdminSidebar from './AdminSidebar';
+import AdminLayoutShell from './AdminLayoutShell';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -46,35 +47,8 @@ export default async function AdminLayout({
     : 'A';
 
   return (
-    <div className="flex h-screen bg-[#F7F5F0] overflow-hidden font-sans">
-      <AdminSidebar initials={initials} userName={userDb.name} />
-
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
-        {/* We can put the top header inside the page or layout. 
-            The image shows Dashboard header which is specific to the page, but search/notifications could be layout. 
-            However, to exactly match the page styling, we'll let the children handle the full height scrolling area. */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
-          {children}
-        </div>
-      </main>
-      
-      {/* Global styles for custom scrollbar for this specific layout if needed */}
-      <style dangerouslySetInnerHTML={{__html: `
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(0,0,0,0.1);
-          border-radius: 10px;
-        }
-        aside .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
-        }
-      `}} />
-    </div>
+    <AdminLayoutShell initials={initials} userName={userDb.name}>
+      {children}
+    </AdminLayoutShell>
   );
 }

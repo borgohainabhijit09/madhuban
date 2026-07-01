@@ -39,7 +39,15 @@ function ChevronDown(props: any) {
   );
 }
 
-export default function AdminSidebar({ initials, userName }: { initials: string; userName: string }) {
+export default function AdminSidebar({ 
+  initials, 
+  userName,
+  onLinkClick
+}: { 
+  initials: string; 
+  userName: string;
+  onLinkClick?: () => void;
+}) {
   const pathname = usePathname();
 
   return (
@@ -65,6 +73,7 @@ export default function AdminSidebar({ initials, userName }: { initials: string;
             <Link
               key={link.name}
               href={link.href}
+              onClick={onLinkClick}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
                 ${isActive 
                   ? 'bg-[#3D141C] text-[#C89F5F]' 
@@ -80,6 +89,7 @@ export default function AdminSidebar({ initials, userName }: { initials: string;
         <div className="pt-6 mt-4 border-t border-white/10">
           <button 
             onClick={async () => {
+              if (onLinkClick) onLinkClick();
               await adminLogout();
             }} 
             className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-sm font-medium text-gray-400 hover:bg-[#3D141C]/50 hover:text-white transition-all duration-200"
