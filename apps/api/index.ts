@@ -969,7 +969,7 @@ app.get("/api/trucks", async (_req: Request, res: Response) => {
     const result = await pool.query(`
       SELECT t.*, 
              l.latitude, l.longitude, l.speed, l."updatedAt" as "locationUpdatedAt",
-             COALESCE(l."updatedAt" >= NOW() - INTERVAL '5 minutes', false) as "isOnline"
+             COALESCE(l."updatedAt" >= timezone('utc', now()) - INTERVAL '2 minutes', false) as "isOnline"
       FROM "Truck" t
       LEFT JOIN LATERAL (
         SELECT latitude, longitude, speed, "updatedAt"
@@ -1004,7 +1004,7 @@ app.post("/api/trucks/location", async (req: Request, res: Response) => {
     const id = 'loc_' + Math.random().toString(36).substring(2, 10);
     const result = await pool.query(`
       INSERT INTO "DriverLocation" (id, "truckId", latitude, longitude, speed, "updatedAt")
-      VALUES ($1, $2, $3, $4, $5, NOW())
+      VALUES ($1, $2, $3, $4, $5, timezone('utc', now()))
       RETURNING *
     `, [id, truckId, parseFloat(latitude), parseFloat(longitude), speed !== undefined ? parseFloat(speed) : null]);
 
