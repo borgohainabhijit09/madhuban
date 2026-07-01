@@ -968,7 +968,8 @@ app.get("/api/trucks", async (_req: Request, res: Response) => {
   try {
     const result = await pool.query(`
       SELECT t.*, 
-             l.latitude, l.longitude, l.speed, l."updatedAt" as "locationUpdatedAt"
+             l.latitude, l.longitude, l.speed, l."updatedAt" as "locationUpdatedAt",
+             COALESCE(l."updatedAt" >= NOW() - INTERVAL '5 minutes', false) as "isOnline"
       FROM "Truck" t
       LEFT JOIN LATERAL (
         SELECT latitude, longitude, speed, "updatedAt"

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-import { Truck, Plus, Phone, AlertCircle, Loader2, Navigation, CheckCircle2 } from "lucide-react";
+import { Truck, Plus, Phone, AlertCircle, Loader2, Navigation, CheckCircle2, RefreshCw } from "lucide-react";
 
 // Dynamically import the Leaflet map component with SSR disabled
 const TrackingMap = dynamic(() => import("@/components/TrackingMap"), {
@@ -104,12 +104,20 @@ export default function TrackingPage() {
           </h1>
           <p className="text-xs text-gray-500 mt-1">Track the live locations of your delivery trucks on the map (updates every 10s)</p>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-[#3D141C] hover:bg-[#2A0A10] text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
-        >
-          <Plus size={16} /> Add Delivery Truck
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchTrucks}
+            className="bg-white border border-gray-200 text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
+          >
+            <RefreshCw size={16} /> Refresh Map
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-[#3D141C] hover:bg-[#2A0A10] text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition-colors"
+          >
+            <Plus size={16} /> Add Delivery Truck
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -136,10 +144,7 @@ export default function TrackingPage() {
                 </div>
               ) : (
                 trucks.map((truck) => {
-                  const isOnline = truck.latitude !== null && 
-                                   truck.longitude !== null && 
-                                   truck.locationUpdatedAt && 
-                                   (Date.now() - new Date(truck.locationUpdatedAt).getTime() < 120000);
+                  const isOnline = truck.isOnline;
                   return (
                     <div
                       key={truck.id}

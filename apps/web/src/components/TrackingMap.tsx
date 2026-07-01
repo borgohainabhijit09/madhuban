@@ -88,11 +88,8 @@ export default function TrackingMap({ trucks }: TrackingMapProps) {
     const activeCoords: L.LatLngExpression[] = [];
 
     trucks.forEach((truck) => {
-      // Check if location was updated in the last 2 minutes
-      const isOnline = truck.latitude !== null && 
-                       truck.longitude !== null && 
-                       truck.locationUpdatedAt && 
-                       (Date.now() - new Date(truck.locationUpdatedAt).getTime() < 120000);
+      // Check if location is online according to the database
+      const isOnline = truck.isOnline;
 
       if (isOnline) {
         const latLng: L.LatLngExpression = [truck.latitude!, truck.longitude!];
