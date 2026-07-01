@@ -18,12 +18,14 @@ interface TruckLocation {
 
 interface TrackingMapProps {
   trucks: TruckLocation[];
+  selectedTruckId?: string | null;
 }
 
 export default function TrackingMap({ trucks }: TrackingMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<string, L.Marker>>({});
+  const prevSelectedTruckIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -133,12 +135,50 @@ export default function TrackingMap({ trucks }: TrackingMapProps) {
       }
     });
 
-    // Fit map bounds to show all active trucks if there are any
-    if (activeCoords.length > 0) {
+    // Fit map bounds to show all active trucks if there are any and no truck is selected
+    if (activeCoords.length > 0 && !selectedTruckId) {
       const bounds = L.latLngBounds(activeCoords);
       map.fitBounds(bounds, { maxZoom: 15, padding: [50, 50] });
     }
-  }, [trucks]);
+  }, [trucks, selectedTruckId]);
+
+  // Center/Fly-to Selected Truck when selection changes or position updates
+  useEffect(() => {
+    if (!mapRef.current || !selectedTruckId) return;
+
+    const marker = markersRef.current[selectedTruckId];
+    if (marker) {
+      const latLng = marker.getLatLng();
+      if (prevSelectedTruckIdRef.current !== selectedTruckId) {
+        // Initial selection: fly to the truck and zoom in
+        mapRef.current.flyTo(latLng, 16, { animate: true });
+        marker.openPopup();
+        prevSelectedTruckIdRef.current = selectedTruckId;
+      } else {
+        // Position update while selected: pan smoothly
+        mapRef.current.panTo(latLng, { animate: true });
+      }
+    }
+  }, [trucks, selectedTruckId]);
+
+  // Handle clearing selection: fit bounds to all active trucks
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    if (!selectedTruckId) {
+      prevSelectedTruckIdRef.current = null;
+      const activeCoords: L.LatLngExpression[] = [];
+      trucks.forEach((truck) => {
+        if (truck.isOnline) {
+          activeCoords.push([truck.latitude!, truck.longitude!]);
+        }
+      });
+      if (activeCoords.length > 0) {
+        const bounds = L.latLngBounds(activeCoords);
+        mapRef.current.fitBounds(bounds, { maxZoom: 15, padding: [50, 50] });
+      }
+    }
+  }, [trucks, selectedTruckId]);
 
   return (
     <div 

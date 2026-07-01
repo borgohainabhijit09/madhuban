@@ -17,6 +17,7 @@ const TrackingMap = dynamic(() => import("@/components/TrackingMap"), {
 
 export default function TrackingPage() {
   const [trucks, setTrucks] = useState<any[]>([]);
+  const [selectedTruckId, setSelectedTruckId] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -145,13 +146,17 @@ export default function TrackingPage() {
               ) : (
                 trucks.map((truck) => {
                   const isOnline = truck.isOnline;
+                  const isSelected = truck.id === selectedTruckId;
                   return (
                     <div
                       key={truck.id}
+                      onClick={() => isOnline && setSelectedTruckId(isSelected ? null : truck.id)}
                       className={`p-4 rounded-xl border-2 transition-all ${
-                        isOnline
-                          ? "border-green-100 bg-green-50/10"
-                          : "border-gray-100 bg-white"
+                        isSelected
+                          ? "border-[#C89F5F] bg-[#FAF8F5]/80 shadow-sm cursor-pointer"
+                          : isOnline
+                          ? "border-green-100 bg-green-50/10 hover:border-green-200 cursor-pointer"
+                          : "border-gray-100 bg-white opacity-70 cursor-not-allowed"
                       }`}
                     >
                       <div className="flex justify-between items-start">
@@ -202,7 +207,7 @@ export default function TrackingPage() {
         {/* Right: Live Map */}
         <div className="lg:col-span-2">
           <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm h-full flex flex-col justify-between">
-            <TrackingMap trucks={trucks} />
+            <TrackingMap trucks={trucks} selectedTruckId={selectedTruckId} />
           </div>
         </div>
 
