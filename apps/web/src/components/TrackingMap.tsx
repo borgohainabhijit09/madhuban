@@ -14,6 +14,7 @@ interface TruckLocation {
   longitude: number | null;
   speed: number | null;
   locationUpdatedAt: string | null;
+  isOnline: boolean;
 }
 
 interface TrackingMapProps {
