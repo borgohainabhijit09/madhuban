@@ -21,7 +21,7 @@ interface TrackingMapProps {
   selectedTruckId?: string | null;
 }
 
-export default function TrackingMap({ trucks }: TrackingMapProps) {
+export default function TrackingMap({ trucks, selectedTruckId }: TrackingMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<Record<string, L.Marker>>({});
