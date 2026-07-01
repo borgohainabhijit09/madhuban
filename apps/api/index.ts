@@ -15,7 +15,7 @@ const pool = new Pool({
   },
   max: 3,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 5000,
+  connectionTimeoutMillis: 30000,
 });
 
 async function runTransaction<T>(callback: (client: PoolClient) => Promise<T>): Promise<T> {
